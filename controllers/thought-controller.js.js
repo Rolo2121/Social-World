@@ -1,15 +1,15 @@
 const { response } = require('express');
-const { Comment, User } = require('../models');
+const { Thought, User } = require('../models');
 
-const commentController = {
+const thoughtController = {
 	// add comment to user
-	addComment({ params, body }, res) {
+	addThought({ params, body }, res) {
 		console.log(body);
-		Comment.create(body)
+		Thought.create(body)
 			.then(({ _id }) => {
 				return User.findOneAndUpdate(
 					{ _id: params.UserId },
-					{ $push: { comments: _id } },
+					{ $push: { thoughts: _id } },
 					{ new: true }
 				);
 			})
@@ -24,8 +24,8 @@ const commentController = {
 	},
 
 	addReply({ params, body }, res) {
-		Comment.findOneAndUpdate(
-			{ _id: params.commentId },
+		Thought.findOneAndUpdate(
+			{ _id: params.thoughtId },
 			{ $push: { replies: body } },
 			{ new: true, runValidators: true }
 		)
@@ -40,15 +40,15 @@ const commentController = {
 	},
 
 	// remove comment from user
-	removeComment({ params }, res) {
-		Comment.findOneAndDelete({ _id: params.commentId })
-			.then((deletedComment) => {
-				if (!deletedComment) {
-					return res.status(404).json({ message: 'No comment with this id!' });
+	removeThought({ params }, res) {
+		Thought.findOneAndDelete({ _id: params.thoughtId })
+			.then((deletedThought) => {
+				if (!deletedThought) {
+					return res.status(404).json({ message: 'No thought with this id!' });
 				}
 				return User.findByIdAndUpdate(
 					{ _id: params.UserId },
-					{ $pull: { comments: params.commentId } },
+					{ $pull: { thoughts: params.thoughtId } },
 					{ new: true }
 				);
 			})
@@ -63,8 +63,8 @@ const commentController = {
 	},
 	// remove reply
 	removeReply({ params }, res) {
-		Comment.findOneAndUpdate(
-			{ _id: params.commentId },
+		Thought.findOneAndUpdate(
+			{ _id: params.thoughtId },
 			{ $pull: { replies: { replyId: params.replyId } } },
 			{ new: true }
 		)
@@ -73,4 +73,4 @@ const commentController = {
 	},
 };
 
-module.exports = commentController;
+module.exports = thoughtController;
